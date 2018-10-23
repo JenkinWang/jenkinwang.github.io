@@ -270,7 +270,7 @@
 
     <div class="post-content">
       
-        <h2 id="Redis简介"><a href="#Redis简介" class="headerlink" title="Redis简介"></a>Redis简介</h2><p>Redis是一个开源的、高性能的、基于键值对的缓存与存储系统，通过提供多种键值数据类型来适应不同场景下的缓存与存储需求。同时Redis的诸多高层级功能使其可以胜任消息队列、任务队列等不同角色。</p>
+        <h2 id="Redis简介"><a href="#Redis简介" class="headerlink" title="Redis简介"></a>Redis简介</h2><p><a href="https://redis.io/" target="_blank" rel="noopener">Redis</a>是一个开源的、高性能的、基于键值对的缓存与存储系统，通过提供多种键值数据类型来适应不同场景下的缓存与存储需求。同时Redis的诸多高层级功能使其可以胜任消息队列、任务队列等不同角色。</p>
 <a id="more"></a>
 <h2 id="Redis的特性"><a href="#Redis的特性" class="headerlink" title="Redis的特性"></a>Redis的特性</h2><h3 id="1-键值数据类型"><a href="#1-键值数据类型" class="headerlink" title="1.键值数据类型"></a>1.键值数据类型</h3><ul>
 <li><strong>字符串类型</strong></li>
@@ -285,7 +285,7 @@
 <p>Redis和Memcached的对比：在性能上Redis是单线程的，而Memcached支持多线程，虽然在多核服务器上后者的性能理论相对高一些，但Redis的性能非常优异，这不会成为他的瓶颈。在Redis3.0中，加入了对集群的支持，Memcached不在具有优势</p>
 </blockquote>
 <h3 id="4-简单稳定"><a href="#4-简单稳定" class="headerlink" title="4.简单稳定"></a>4.简单稳定</h3><h2 id="安装Redis"><a href="#安装Redis" class="headerlink" title="安装Redis"></a>安装Redis</h2><p>因为我用的是MBP，这里我只介绍OS X里的安装方法。通过homebrew来安装Redis.</p>
-<h3 id="1-首先安装HomeBrew"><a href="#1-首先安装HomeBrew" class="headerlink" title="1.首先安装HomeBrew"></a>1.首先安装HomeBrew</h3><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ruby -e <span class="string">"<span class="variable">$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)</span>"</span></span><br></pre></td></tr></table></figure>
+<h3 id="1-首先安装HomeBrew"><a href="#1-首先安装HomeBrew" class="headerlink" title="1.首先安装HomeBrew"></a>1.首先安装<a href="https://brew.sh/" target="_blank" rel="noopener">HomeBrew</a></h3><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ruby -e <span class="string">"<span class="variable">$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)</span>"</span></span><br></pre></td></tr></table></figure>
 <p>如果已经安装homebrew，执行 homebrew update来更新homebrew，以便安装最新的redis.</p>
 <h3 id="2-通过Homebrew安装Redis"><a href="#2-通过Homebrew安装Redis" class="headerlink" title="2.通过Homebrew安装Redis"></a>2.通过Homebrew安装Redis</h3><p>在终端中输入下面代码</p>
 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span><span class="bash"> brew install redis</span></span><br></pre></td></tr></table></figure>
