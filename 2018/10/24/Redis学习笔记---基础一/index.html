@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head><meta name="generator" content="Hexo 3.8.0">
+    
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+<meta name="theme-color" content="#f8f5ec">
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+
+
+  <meta name="description" content="Redis学习笔记---基础一">
+
+
+
+
+  <meta name="keywords" content="Java Python">
+
+
+
+
+
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="JenkinWang's Blog">
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=2.10.1">
+
+
+
+<link rel="canonical" href="https://jenkinwang.github.io/2018/10/24/Redis学习笔记---基础一/">
+
+
+
+
+
+
+  <link rel="stylesheet" type="text/css" href="/lib/nprogress/nprogress.min.css">
+
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=2.10.1">
+
+
+
+  
+
+
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=127759237"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', '127759237');
+</script>
+
+
+  <script id="baidu_push">
+(function(){
+    var bp = document.createElement('script');
+    var curProtocol = window.location.protocol.split(':')[0];
+    if (curProtocol === 'https') {
+        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+    }
+    else {
+        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+    }
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(bp, s);
+})();
+</script>
+
+
+
+
+
+  <script src="//cdn1.lncld.net/static/js/3.1.1/av-min.js"></script>
+  <script id="leancloud">
+    AV.init({
+      appId: "23JXQLK8pRo0JVsdCeKB26AH-gzGzoHsz",
+      appKey: "Mq4M5ifluYUrP5reggvU7uKK"
+    });
+  </script>
+
+
+
+
+
+<script>
+  window.config = {"leancloud":{"enable":true,"app_id":"23JXQLK8pRo0JVsdCeKB26AH-gzGzoHsz","app_key":"Mq4M5ifluYUrP5reggvU7uKK"},"toc":true,"fancybox":false,"pjax":true};
+</script>
+
+    <title> Redis学习笔记---基础一 - JenkinWang's Blog </title>
+  </head>
+
+  <body><div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/." class="logo">JenkinWang's Blog</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list">
+    
+      <a href="/">
+        <li class="mobile-menu-item">
+          
+          
+            首页
+          
+        </li>
+      </a>
+    
+      <a href="/archives/">
+        <li class="mobile-menu-item">
+          
+          
+            归档
+          
+        </li>
+      </a>
+    
+      <a href="/tags">
+        <li class="mobile-menu-item">
+          
+          
+            标签
+          
+        </li>
+      </a>
+    
+      <a href="/categories/">
+        <li class="mobile-menu-item">
+          
+          
+            分类
+          
+        </li>
+      </a>
+    
+      <a href="/about">
+        <li class="mobile-menu-item">
+          
+          
+            关于
+          
+        </li>
+      </a>
+    
+  </ul>
+</nav>
+
+    <div class="container" id="mobile-panel">
+      <header id="header" class="header"><div class="logo-wrapper">
+  <a href="/." class="logo">JenkinWang's Blog</a>
+</div>
+
+<nav class="site-navbar">
+  
+    <ul id="menu" class="menu">
+      
+        <li class="menu-item">
+          <a class="menu-item-link" href="/">
+            
+            
+              首页
+            
+          </a>
+        </li>
+      
+        <li class="menu-item">
+          <a class="menu-item-link" href="/archives/">
+            
+            
+              归档
+            
+          </a>
+        </li>
+      
+        <li class="menu-item">
+          <a class="menu-item-link" href="/tags">
+            
+            
+              标签
+            
+          </a>
+        </li>
+      
+        <li class="menu-item">
+          <a class="menu-item-link" href="/categories/">
+            
+            
+              分类
+            
+          </a>
+        </li>
+      
+        <li class="menu-item">
+          <a class="menu-item-link" href="/about">
+            
+            
+              关于
+            
+          </a>
+        </li>
+      
+    </ul>
+  
+</nav>
+
+      </header>
+
+      <main id="main" class="main">
+        <div class="content-wrapper">
+          <div id="content" class="content">
+            
+  
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          Redis学习笔记---基础一
+        
+      </h1>
+
+      <div class="post-meta">
+        <span class="post-time">
+          2018-10-24
+        </span>
+        
+        
+        <span class="post-visits" data-url="/2018/10/24/Redis学习笔记---基础一/" data-title="Redis学习笔记---基础一">
+          阅读次数 0
+        </span>
+        
+      </div>
+    </header>
+
+    
+    
+  <div class="post-toc" id="post-toc">
+    <h2 class="post-toc-title">文章目录</h2>
+    <div class="post-toc-content">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Redis简介"><span class="toc-text">Redis简介</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Redis的特性"><span class="toc-text">Redis的特性</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-键值数据类型"><span class="toc-text">1.键值数据类型</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-内存存储于持久化"><span class="toc-text">2.内存存储于持久化</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-功能丰富"><span class="toc-text">3.功能丰富</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-简单稳定"><span class="toc-text">4.简单稳定</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#安装Redis"><span class="toc-text">安装Redis</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-首先安装HomeBrew"><span class="toc-text">1.首先安装HomeBrew</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-通过Homebrew安装Redis"><span class="toc-text">2.通过Homebrew安装Redis</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#启动和停止Redis"><span class="toc-text">启动和停止Redis</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-启动"><span class="toc-text">1.启动</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-停止"><span class="toc-text">2.停止</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#配置"><span class="toc-text">配置</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#多数据库"><span class="toc-text">多数据库</span></a></li></ol>
+    </div>
+  </div>
+
+
+
+    <div class="post-content">
+      
+        <h2 id="Redis简介"><a href="#Redis简介" class="headerlink" title="Redis简介"></a>Redis简介</h2><p>Redis是一个开源的、高性能的、基于键值对的缓存与存储系统，通过提供多种键值数据类型来适应不同场景下的缓存与存储需求。同时Redis的诸多高层级功能使其可以胜任消息队列、任务队列等不同角色。</p>
+<a id="more"></a>
+<h2 id="Redis的特性"><a href="#Redis的特性" class="headerlink" title="Redis的特性"></a>Redis的特性</h2><h3 id="1-键值数据类型"><a href="#1-键值数据类型" class="headerlink" title="1.键值数据类型"></a>1.键值数据类型</h3><ul>
+<li><strong>字符串类型</strong></li>
+<li><strong>散列类型</strong></li>
+<li><strong>列表类型</strong></li>
+<li><strong>集合类型</strong></li>
+<li><strong>有序集合类型</strong></li>
+</ul>
+<h3 id="2-内存存储于持久化"><a href="#2-内存存储于持久化" class="headerlink" title="2.内存存储于持久化"></a>2.内存存储于持久化</h3><p>Redis数据库中的所有数据都是存储在内存中。由于内存的读写速度远快于硬盘，因此Redis在性能上对比其他基于硬盘存储的数据库有非常明显的优势，在一台普通的笔记本电脑上，Redis可以一秒内读写超过10万个键值。</p>
+<h3 id="3-功能丰富"><a href="#3-功能丰富" class="headerlink" title="3.功能丰富"></a>3.功能丰富</h3><p>Redis虽然是作为数据库开发的，但大部分人还是将其作为缓存、队列系统来用</p>
+<blockquote>
+<p>Redis和Memcached的对比：在性能上Redis是单线程的，而Memcached支持多线程，虽然在多核服务器上后者的性能理论相对高一些，但Redis的性能非常优异，这不会成为他的瓶颈。在Redis3.0中，加入了对集群的支持，Memcached不在具有优势</p>
+</blockquote>
+<h3 id="4-简单稳定"><a href="#4-简单稳定" class="headerlink" title="4.简单稳定"></a>4.简单稳定</h3><h2 id="安装Redis"><a href="#安装Redis" class="headerlink" title="安装Redis"></a>安装Redis</h2><p>因为我用的是MBP，这里我只介绍OS X里的安装方法。通过homebrew来安装Redis.</p>
+<h3 id="1-首先安装HomeBrew"><a href="#1-首先安装HomeBrew" class="headerlink" title="1.首先安装HomeBrew"></a>1.首先安装HomeBrew</h3><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ruby -e <span class="string">"<span class="variable">$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)</span>"</span></span><br></pre></td></tr></table></figure>
+<p>如果已经安装homebrew，执行 homebrew update来更新homebrew，以便安装最新的redis.</p>
+<h3 id="2-通过Homebrew安装Redis"><a href="#2-通过Homebrew安装Redis" class="headerlink" title="2.通过Homebrew安装Redis"></a>2.通过Homebrew安装Redis</h3><p>在终端中输入下面代码</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span><span class="bash"> brew install redis</span></span><br></pre></td></tr></table></figure>
+<h2 id="启动和停止Redis"><a href="#启动和停止Redis" class="headerlink" title="启动和停止Redis"></a>启动和停止Redis</h2><h3 id="1-启动"><a href="#1-启动" class="headerlink" title="1.启动"></a>1.启动</h3><p>终端中输入如下命令，默认使用<strong>6379</strong>端口，即可启动Redis</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span><span class="bash"> redis-server</span></span><br></pre></td></tr></table></figure>
+<p>启动效果：</p>
+<p><img src="/images/Screen Shot 2018-10-23 at 22.58.35.png" alt="Redis启动效果"></p>
+<p>也可通过<strong>–port</strong>参数自定义端口号</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span><span class="bash"> redis-server --port 6380</span></span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>6379是手机键盘上MERZ对应的数字，MERZ是一名意大利歌女的名字</p>
+</blockquote>
+<h3 id="2-停止"><a href="#2-停止" class="headerlink" title="2.停止"></a>2.停止</h3><p>强行终止Redis进程可能会导致数据丢失，正确做法是 向Redis发送 <strong>SHUTDOWN</strong> 命令：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span><span class="bash"> redis-cli SHUTDOWN</span></span><br></pre></td></tr></table></figure>
+<p>Redis收到<strong>SHUTDOWN</strong>命令后，会先断开所有的客户端连接，然后根据配置执行持久化，最后完成退出。使用<strong>kill Redis进程的PID</strong>也可以正常关闭Redis，效果与SHUTDOWN一样。</p>
+<h2 id="配置"><a href="#配置" class="headerlink" title="配置"></a>配置</h2><p>启用配置文件的方法是在启动时将配置文件的路径作为启动参数传递给redis-server,如：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span><span class="bash"> redis-server /path/to/redis.conf</span></span><br></pre></td></tr></table></figure>
+<p>Redis提供了一个配置文件的模板<strong>redis.conf</strong>，位于源代码目录的根目录中。</p>
+<h2 id="多数据库"><a href="#多数据库" class="headerlink" title="多数据库"></a>多数据库</h2><p>Redis默认支持<strong><em>16</em></strong>个数据库，可通过配置参数<strong>databases</strong>来修改这一数字。客户端与Redis建立连接后自动选择0号数据库，可通过<strong>SELECT</strong>命令随时更换数据库：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">redis&gt;</span><span class="bash"> SELECT 1</span></span><br><span class="line">OK</span><br><span class="line">redis [1]&gt;</span><br></pre></td></tr></table></figure>
+<p>Redis不支持自定义数据库名字，每个数据库都以编号命名。Redis不支持为每个数据库设置不同的访问密码。所以一个客户端要么访问全部数据库，要么一个数据库也没有权限。多个数据库之间并不是完全隔离，<strong><em>FLUSHALL</em></strong>命令可以清空Redis实例中所有数据库中的数据。由于Redis非常轻量级，一个空Redis实例占用的内存只有1MB左右，所以不用担心多个Redis实例会额外占用很多内存。</p>
+<blockquote>
+<p>参考书籍：《Redis入门指南(第二版)》李子骅</p>
+</blockquote>
+
+      
+    </div>
+
+    
+      
+      
+
+  <div class="post-copyright">
+    <p class="copyright-item">
+      <span>原文作者: </span>
+      <a href="https://jenkinwang.github.io">Jenkin Wang</a>
+    </p>
+    <p class="copyright-item">
+      <span>原文链接: </span>
+      <a href="https://jenkinwang.github.io/2018/10/24/Redis学习笔记---基础一/">https://jenkinwang.github.io/2018/10/24/Redis学习笔记---基础一/</a>
+    </p>
+    <p class="copyright-item">
+      <span>许可协议: </span>
+      
+      <a rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/" target="_blank">知识共享署名-非商业性使用 4.0 国际许可协议</a>
+    </p>
+  </div>
+
+
+
+      
+      
+    
+
+    
+      <footer class="post-footer">
+        
+          <div class="post-tags">
+            
+              <a href="/tags/Redis/">Redis</a>
+            
+          </div>
+        
+        
+        
+  <nav class="post-nav">
+    
+    
+      <a class="next" href="/2018/10/19/springboot-redis/">
+        <span class="next-text nav-default">SpringBoot整合Redis开发RESTful API接口</span>
+        <span class="prev-text nav-mobile">下一篇</span>
+        <i class="iconfont icon-right"></i>
+      </a>
+    
+  </nav>
+
+
+      </footer>
+    
+
+  </article>
+
+
+          </div>
+          
+  <div class="comments" id="comments">
+    
+  </div>
+
+
+        </div>
+      </main>
+
+      <footer id="footer" class="footer">
+
+  <div class="social-links">
+    
+      
+        
+          <a href="mailto:Jenkin9400@gmail.com" class="iconfont icon-email" title="email"></a>
+        
+      
+    
+      
+    
+      
+        
+          <a href="https://twitter.com/jenkin9400" class="iconfont icon-twitter" title="twitter"></a>
+        
+      
+    
+      
+    
+      
+    
+      
+    
+      
+        
+          <a href="https://github.com/JenkinWang" class="iconfont icon-github" title="github"></a>
+        
+      
+    
+      
+        
+          <a href="https://weibo.com/p/1005055055707163" class="iconfont icon-weibo" title="weibo"></a>
+        
+      
+    
+      
+    
+      
+    
+      
+        
+          <a href="https://getpocket.com/@3c8p8T48Ak5c1dfYT6gf6c5g59d9A9b2025Dd6L819Z851Je7b697T84m5cSQxN4" class="iconfont icon-pocket" title="pocket"></a>
+        
+      
+    
+      
+    
+      
+    
+
+    
+      <a href="/atom.xml" class="iconfont icon-rss" title="rss"></a>
+    
+  </div>
+
+
+
+<div class="copyright">
+  <span class="power-by">
+    由 <a class="hexo-link" href="https://hexo.io/">Hexo</a> 强力驱动
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    主题 - 
+    <a class="theme-link" href="https://github.com/ahonn/hexo-theme-even">Even</a>
+  </span>
+
+  <span class="copyright-year">
+    
+    &copy; 
+    
+    2018
+
+    <span class="heart">
+      <i class="iconfont icon-heart"></i>
+    </span>
+    <span class="author">Jenkin Wang</span>
+  </span>
+</div>
+
+      </footer>
+
+      <div class="back-to-top" id="back-to-top">
+        <i class="iconfont icon-up"></i>
+      </div>
+    </div>
+
+    
+  
+  
+
+  
+
+
+
+    
+
+
+  
+  
+
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery.min.js"></script>
+  
+
+  
+    <script type="text/javascript" src="/lib/slideout/slideout.js"></script>
+  
+
+  
+
+  
+    <script type="text/javascript" src="/lib/pjax/jquery.pjax.min.js"></script>
+  
+
+  
+    <script type="text/javascript" src="/lib/nprogress/nprogress.min.js"></script>
+  
+
+
+    <script type="text/javascript" src="/js/src/even.js?v=2.10.1"></script>
+
+  </body>
+</html>
