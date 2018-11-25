@@ -17,7 +17,7 @@
 
 
 
-  <meta name="description" content="一只慵懒的程序猿">
+  <meta name="description" content="Redis学习笔记---进阶篇">
 
 
 
@@ -42,7 +42,7 @@
 
 
 
-<link rel="canonical" href="https://jenkinwang.github.io/">
+<link rel="canonical" href="https://jenkinwang.github.io/2018/11/26/Redis学习笔记-进阶篇/">
 
 
 
@@ -106,7 +106,7 @@
   window.config = {"leancloud":{"enable":true,"app_id":"23JXQLK8pRo0JVsdCeKB26AH-gzGzoHsz","app_key":"Mq4M5ifluYUrP5reggvU7uKK"},"toc":true,"fancybox":false,"pjax":true};
 </script>
 
-    <title> JenkinWang's Blog </title>
+    <title> Redis学习笔记---进阶篇 - JenkinWang's Blog </title>
   </head>
 
   <body><div id="mobile-navbar" class="mobile-navbar">
@@ -236,15 +236,11 @@
           <div id="content" class="content">
             
   
-  <section id="posts" class="posts">
-    
-      
-        
   <article class="post">
     <header class="post-header">
       <h1 class="post-title">
         
-          <a class="post-link" href="/2018/11/26/Redis学习笔记-进阶篇/">Redis学习笔记---进阶篇</a>
+          Redis学习笔记---进阶篇
         
       </h1>
 
@@ -263,15 +259,18 @@
 
     
     
+  <div class="post-toc" id="post-toc">
+    <h2 class="post-toc-title">文章目录</h2>
+    <div class="post-toc-content">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#一、事务"><span class="toc-text">一、事务</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-MULTI命令"><span class="toc-text">1.MULTI命令</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-错误处理"><span class="toc-text">2.错误处理</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-WATCH命令"><span class="toc-text">3.WATCH命令</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#二、过期时间"><span class="toc-text">二、过期时间</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-EXPIRE命令"><span class="toc-text">1.EXPIRE命令</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-缓存"><span class="toc-text">2.缓存</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#三、排序"><span class="toc-text">三、排序</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-有序集合的集合操作"><span class="toc-text">1.有序集合的集合操作</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-SORT命令"><span class="toc-text">2.SORT命令</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-BY参数"><span class="toc-text">3.BY参数</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-GET参数"><span class="toc-text">4.GET参数</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-STORE参数"><span class="toc-text">5.STORE参数</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-性能优化"><span class="toc-text">6.性能优化</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#四、消息通知"><span class="toc-text">四、消息通知</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-任务队列"><span class="toc-text">1.任务队列</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-使用Redis实现任务队列"><span class="toc-text">2.使用Redis实现任务队列</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-队列优先级"><span class="toc-text">3.队列优先级</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-”发布-订阅”模式"><span class="toc-text">4.”发布/订阅”模式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-按照规则订阅"><span class="toc-text">5.按照规则订阅</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#五、管道"><span class="toc-text">五、管道</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#六、节省空间"><span class="toc-text">六、节省空间</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-精简键名和键值"><span class="toc-text">1.精简键名和键值</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-内部编码优化"><span class="toc-text">2.内部编码优化</span></a></li></ol></li></ol>
+    </div>
+  </div>
+
 
 
     <div class="post-content">
       
-        
-        
-
-        
-          <h2 id="一、事务"><a href="#一、事务" class="headerlink" title="一、事务"></a>一、事务</h2><h3 id="1-MULTI命令"><a href="#1-MULTI命令" class="headerlink" title="1.MULTI命令"></a>1.MULTI命令</h3><p>Redis中的<strong>事务</strong>(transaction)是一组命令的集合。一个事务中的命令要么都执行，要么都不执行。Redis通过<strong>MULTI</strong>开启事务，之后的命令将被存储在等待执行的事务队列中，使用<strong>EXEC</strong>命令将等待执行的事务队列中的所有命令按照发送顺序依次执行。EXEC命令的返回值就是这些命令的返回值组成的列表。返回值顺序和命令的顺序相同。</p>
+        <h2 id="一、事务"><a href="#一、事务" class="headerlink" title="一、事务"></a>一、事务</h2><h3 id="1-MULTI命令"><a href="#1-MULTI命令" class="headerlink" title="1.MULTI命令"></a>1.MULTI命令</h3><p>Redis中的<strong>事务</strong>(transaction)是一组命令的集合。一个事务中的命令要么都执行，要么都不执行。Redis通过<strong>MULTI</strong>开启事务，之后的命令将被存储在等待执行的事务队列中，使用<strong>EXEC</strong>命令将等待执行的事务队列中的所有命令按照发送顺序依次执行。EXEC命令的返回值就是这些命令的返回值组成的列表。返回值顺序和命令的顺序相同。</p>
 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">127.0.0.1:6379&gt; multi</span><br><span class="line">OK</span><br><span class="line"></span><br><span class="line">127.0.0.1:6379&gt; sadd "user:1:following" 2</span><br><span class="line">QUEUED</span><br><span class="line">127.0.0.1:6379&gt; sadd "user:2:followers" 1</span><br><span class="line">QUEUED</span><br><span class="line"></span><br><span class="line">127.0.0.1:6379&gt; exec</span><br><span class="line">1) (integer) 1</span><br><span class="line">2) (integer) 1</span><br></pre></td></tr></table></figure>
 <h3 id="2-错误处理"><a href="#2-错误处理" class="headerlink" title="2.错误处理"></a>2.错误处理</h3><p>a. 语法错误。指命令不存在或者命令参数的个数不对。只要有一个命令有语法错误，执行<strong>EXEC</strong>命令之后Redis就会直接返回错误，连语法正确的命令也不会执行。</p>
 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">127.0.0.1:6379&gt; multi</span><br><span class="line">OK</span><br><span class="line"></span><br><span class="line">127.0.0.1:6379&gt; set key value</span><br><span class="line">QUEUED</span><br><span class="line">127.0.0.1:6379&gt; set key</span><br><span class="line">(error) ERR wrong number of arguments for 'set' command</span><br><span class="line">127.0.0.1:6379&gt; errorcommand key</span><br><span class="line">(error) ERR unknown command `errorcommand`, with args beginning with: `key`,</span><br><span class="line"></span><br><span class="line">127.0.0.1:6379&gt; exec</span><br><span class="line">(error) EXECABORT Transaction discarded because of previous errors.</span><br></pre></td></tr></table></figure>
@@ -357,179 +356,70 @@
 <h2 id="五、管道"><a href="#五、管道" class="headerlink" title="五、管道"></a>五、管道</h2><p>不管是客户端向Redis发送命令还是Redis向客户端返回命令的执行结果，都需要经过网络传输，这两个部分的总耗时称为<strong>往返时延</strong>。</p>
 <p>Redis的底层通信协议对<strong>管道</strong>(<strong>pipelining</strong>)提供了支持。通过管道可以一次性发送多条命令并在执行完后一次性将结果返回，当一组命令中每条命令都不依赖于之前命令的执行结果时就可以将这组命令一起通过管道发出。管道通过减少客户端与Redis的通信次数来实现降低往返时延累计值的目的。</p>
 <h2 id="六、节省空间"><a href="#六、节省空间" class="headerlink" title="六、节省空间"></a>六、节省空间</h2><h3 id="1-精简键名和键值"><a href="#1-精简键名和键值" class="headerlink" title="1.精简键名和键值"></a>1.精简键名和键值</h3><h3 id="2-内部编码优化"><a href="#2-内部编码优化" class="headerlink" title="2.内部编码优化"></a>2.内部编码优化</h3>
-        
       
     </div>
 
     
+      
+      
 
-    
+  <div class="post-copyright">
+    <p class="copyright-item">
+      <span>原文作者: </span>
+      <a href="https://jenkinwang.github.io">Jenkin Wang</a>
+    </p>
+    <p class="copyright-item">
+      <span>原文链接: </span>
+      <a href="https://jenkinwang.github.io/2018/11/26/Redis学习笔记-进阶篇/">https://jenkinwang.github.io/2018/11/26/Redis学习笔记-进阶篇/</a>
+    </p>
+    <p class="copyright-item">
+      <span>许可协议: </span>
+      
+      <a rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/" target="_blank">知识共享署名-非商业性使用 4.0 国际许可协议</a>
+    </p>
+  </div>
 
-  </article>
+
 
       
-        
-  <article class="post">
-    <header class="post-header">
-      <h1 class="post-title">
-        
-          <a class="post-link" href="/2018/10/29/Redis学习笔记---数据类型/">Redis学习笔记---数据类型</a>
-        
-      </h1>
-
-      <div class="post-meta">
-        <span class="post-time">
-          2018-10-29
-        </span>
-        
-        
-        <span class="post-visits" data-url="/2018/10/29/Redis学习笔记---数据类型/" data-title="Redis学习笔记---数据类型">
-          阅读次数 0
-        </span>
-        
-      </div>
-    </header>
-
-    
-    
-
-
-    <div class="post-content">
       
-        
-        
-          
-        
+    
 
+    
+      <footer class="post-footer">
         
-          <p><a href="https://redis.io/" target="_blank" rel="noopener"><strong>Redis</strong></a>是<strong>REmote DIctionary Server</strong>(远程字典服务器)的缩写，它以<strong>字典结构</strong>存储数据。现在我们来学习它的五种键值数据类型。学习之前先来了解几个基础命令。</p>
-<p>先开启Redis服务：</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span><span class="bash"> redis-server</span></span><br></pre></td></tr></table></figure>
-          <div class="read-more">
-            <a href="/2018/10/29/Redis学习笔记---数据类型/" class="read-more-link">阅读更多</a>
+          <div class="post-tags">
+            
+              <a href="/tags/Redis/">Redis</a>
+            
           </div>
         
-      
-    </div>
-
-    
-
-    
-
-  </article>
-
-      
-        
-  <article class="post">
-    <header class="post-header">
-      <h1 class="post-title">
-        
-          <a class="post-link" href="/2018/10/24/Redis学习笔记---基础一/">Redis学习笔记---基础一</a>
-        
-      </h1>
-
-      <div class="post-meta">
-        <span class="post-time">
-          2018-10-24
-        </span>
         
         
-        <span class="post-visits" data-url="/2018/10/24/Redis学习笔记---基础一/" data-title="Redis学习笔记---基础一">
-          阅读次数 0
-        </span>
-        
-      </div>
-    </header>
-
+  <nav class="post-nav">
     
     
-
-
-    <div class="post-content">
-      
-        
-        
-          
-        
-
-        
-          <h2 id="Redis简介"><a href="#Redis简介" class="headerlink" title="Redis简介"></a>Redis简介</h2><p><a href="https://redis.io/" target="_blank" rel="noopener">Redis</a>是一个开源的、高性能的、基于键值对的缓存与存储系统，通过提供多种键值数据类型来适应不同场景下的缓存与存储需求。同时Redis的诸多高层级功能使其可以胜任消息队列、任务队列等不同角色。</p>
-          <div class="read-more">
-            <a href="/2018/10/24/Redis学习笔记---基础一/" class="read-more-link">阅读更多</a>
-          </div>
-        
-      
-    </div>
-
-    
-
-    
-
-  </article>
-
-      
-        
-  <article class="post">
-    <header class="post-header">
-      <h1 class="post-title">
-        
-          <a class="post-link" href="/2018/10/19/springboot-redis/">SpringBoot整合Redis开发RESTful API接口</a>
-        
-      </h1>
-
-      <div class="post-meta">
-        <span class="post-time">
-          2018-10-19
-        </span>
-        
-        
-        <span class="post-visits" data-url="/2018/10/19/springboot-redis/" data-title="SpringBoot整合Redis开发RESTful API接口">
-          阅读次数 0
-        </span>
-        
-      </div>
-    </header>
-
-    
-    
-
-
-    <div class="post-content">
-      
-        
-        
-          
-        
-
-        
-          <h2 id="项目框架"><a href="#项目框架" class="headerlink" title="项目框架"></a>项目框架</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">   ├── pom.xml</span><br><span class="line">   ├── springbootreidsrestfulapi.iml</span><br><span class="line">   ├── src</span><br><span class="line">   │   ├── main</span><br><span class="line">   │   │   ├── java</span><br><span class="line">   │   │   │   └── com</span><br><span class="line">   │   │   │       └── jenkin</span><br><span class="line">   │   │   │           └── springboot</span><br><span class="line">   │   │   │               ├── App.java</span><br><span class="line">   │   │   │               ├── controller</span><br><span class="line">   │   │   │               │   └── UserController.java</span><br><span class="line">   │   │   │               ├── pojo</span><br><span class="line">   │   │   │               │   ├── RedisConfigBean.java</span><br><span class="line">   │   │   │               │   └── User.java</span><br><span class="line">   │   │   │               ├── redis</span><br><span class="line">   │   │   │               │   └── RedisConfig.java</span><br><span class="line">   │   │   │               └── service</span><br><span class="line">   │   │   │                   ├── UserService.java</span><br><span class="line">   │   │   │                   └── impl</span><br><span class="line">   │   │   │                       └── UserServiceImpl.java</span><br><span class="line">   │   │   └── resources</span><br><span class="line">   │   │       └── application.properties</span><br></pre></td></tr></table></figure>
-<h2 id="配置文件"><a href="#配置文件" class="headerlink" title="配置文件"></a>配置文件</h2><p>在<a href="https://spring.io/guides/gs/spring-boot/" target="_blank" rel="noopener">SpringBoot</a>里的application.properties文件中配置<a href="https://redis.io/" target="_blank" rel="noopener">Redis</a>信息<br>
-          <div class="read-more">
-            <a href="/2018/10/19/springboot-redis/" class="read-more-link">阅读更多</a>
-          </div>
-        
-      
-    </p></div>
-
-    
-
-    
-
-  </article>
-
-      
-      
-  <nav class="pagination">
-    
+      <a class="next" href="/2018/10/29/Redis学习笔记---数据类型/">
+        <span class="next-text nav-default">Redis学习笔记---数据类型</span>
+        <span class="prev-text nav-mobile">下一篇</span>
+        <i class="iconfont icon-right"></i>
+      </a>
     
   </nav>
 
 
+      </footer>
     
-  </section>
+
+  </article>
+
 
           </div>
           
+  <div class="comments" id="comments">
+    
+  </div>
+
 
         </div>
       </main>
@@ -623,6 +513,11 @@
     </div>
 
     
+  
+  
+
+  
+
 
 
     
