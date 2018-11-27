@@ -6,7 +6,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="https://jenkinwang.github.io/"/>
-  <updated>2018-11-25T16:54:20.750Z</updated>
+  <updated>2018-11-27T08:49:23.360Z</updated>
   <id>https://jenkinwang.github.io/</id>
   
   <author>
@@ -15,6 +15,30 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>Redis学习笔记---持久化</title>
+    <link href="https://jenkinwang.github.io/2018/11/27/Redis%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-%E6%8C%81%E4%B9%85%E5%8C%96/"/>
+    <id>https://jenkinwang.github.io/2018/11/27/Redis学习笔记-持久化/</id>
+    <published>2018-11-27T08:47:37.000Z</published>
+    <updated>2018-11-27T08:49:23.360Z</updated>
+    
+    <content type="html"><![CDATA[<p>将数据从内存中以某种形式同步到硬盘中，使得重启后可以根据硬盘中的记录恢复数据，这一过程就是<strong>持久化</strong>。</p><p>Redis支持两种方式的持久化: ①<strong>RDB</strong>方式：根据指定规则“定时”将内存中的数据存储在硬盘上；</p><p>​                          ②<strong>AOF</strong>方式：每次执行命令后将命令本身记录下来。</p><h2 id="一、RDB方式"><a href="#一、RDB方式" class="headerlink" title="一、RDB方式"></a>一、RDB方式</h2><p>​    <strong>RDB</strong>方式的持久化是通过<strong>快照</strong>(<strong>snapshotting</strong>)完成的，当完成一定条件时Redis会自动将内存中的所有数据生成一份副本并存储在硬盘上，这个过程称为“<strong>快照</strong>”。</p><h3 id="1-根据配置规则进行自动快照"><a href="#1-根据配置规则进行自动快照" class="headerlink" title="1.根据配置规则进行自动快照"></a>1.根据配置规则进行自动快照</h3><p>通过<strong>redis.conf</strong>配置文件(/usr/local/etc/redis.conf)，我们可以看到Redis为我们预置了3个条件：</p><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">save 900 1# 在15分钟(900秒)内有一个或一个以上的键被更改则进行快照。</span><br><span class="line">save 300 10# 在5分钟(300秒)内至少有10个键被更改则进行快照。</span><br><span class="line">save 60 10000# 在1分钟(60秒)内至少有1000个键被更改则进行快照。</span><br></pre></td></tr></table></figure><p>每条快照条件占一行，以<strong>save</strong>参数开头。我们可以自定义这些参数，如果符合自动快照条件，Redis会自动执行快照条件。</p><h3 id="2-用户执行SAVE或BGSAVE命令"><a href="#2-用户执行SAVE或BGSAVE命令" class="headerlink" title="2.用户执行SAVE或BGSAVE命令"></a>2.用户执行SAVE或BGSAVE命令</h3><p>除了自动快照，当服务重启、手动迁移以及备份时，我们需要进行手动快照操作。</p><h4 id="1-SAVE命令"><a href="#1-SAVE命令" class="headerlink" title="1.SAVE命令"></a>1.SAVE命令</h4><p>当执行<strong>save</strong>命令时，Redis<strong>同步</strong>地进行快照操作，在执行快照操作中会<strong>阻塞</strong>所有来自客户端的请求。如果数据库中的数据比较多时，会导致Redis较长时间内无响应。因避免在生产环境中使用这一命令。    </p><h4 id="2-BGSAVE命令-手动时推荐"><a href="#2-BGSAVE命令-手动时推荐" class="headerlink" title="2.BGSAVE命令(手动时推荐)"></a>2.BGSAVE命令(手动时推荐)</h4><p><strong>bgsave</strong>命令可以在后台<strong>异步</strong>执行快照操作，快照的同时仍可接受来自客户端的请求。执行bgsave命令后Redis立即返回OK表示开始执行快照操作，可通过<strong>LASTSAVE</strong>命令获取最近一次成功执行快照的时间。</p><h3 id="3-执行FLUSHALL命令"><a href="#3-执行FLUSHALL命令" class="headerlink" title="3.执行FLUSHALL命令"></a>3.执行FLUSHALL命令</h3><p>执行<strong>flushall</strong>命令时，Redis会清楚数据库中的所有数据。但不论清楚数据库的过程是否触发了自动快照条件，<strong>只要自动快照条件不为空</strong>，Redis就会执行一次快照操作。</p><p>当<strong>没有定义自动快照条件</strong>时，执行flushall则不会进行快照。</p><h3 id="4-执行复制时"><a href="#4-执行复制时" class="headerlink" title="4.执行复制时"></a>4.执行复制时</h3><p>当设置<strong>主从模式</strong>时，Redis会在<strong>复制初始化</strong>时进行自动快照。即使没有定义自动快照条件和手动执行快照操作，也会生成<strong>RDB</strong>快照文件。</p><h3 id="5-快照原理"><a href="#5-快照原理" class="headerlink" title="5.快照原理"></a>5.快照原理</h3><p>快照的过程：</p><p>​    1）Redis使用fork函数复制一份当前进程(父进程)的副本(子进程)；</p><p>​    2）父进程继续接收并处理客户端发来的命令，而子进程开始将内存中的数据写入到硬盘中的临时文件；</p><p>​    3）当子进程写入完所有数据后会用该临时文件<strong>替换</strong>旧的RDB文件，至此一次快照操作完成。</p><p><strong>RDB</strong>文件的路径和文件名，可以通过配置文件<strong>redis.conf</strong>中的<strong>dir</strong>和<strong>dbfilename</strong>参数来设置。</p><p>RDB文件是经过<strong>压缩</strong>(可通过配置<strong>rdbcompression</strong>参数<strong>禁用压缩</strong>，默认是开启的)的<strong>二进制格式</strong>，所以占用的空间会小于内存中的数据大小，更加利于传输。</p><p>Redis启动后会读取RDB快照文件，将数据从硬盘载入到内存中。通过RDB方式实现的持久化，若Redis出现异常，就会丢失最后一次快照以后更改的所有数据。</p><h2 id="二、AOF方式"><a href="#二、AOF方式" class="headerlink" title="二、AOF方式"></a>二、AOF方式</h2><p><strong>AOF</strong> = <strong>Append Only File</strong>，AOF持久化可以降低进程中止导致的数据丢失；他可以将Redis执行的每一条写命令追加到硬盘文件中。</p><h3 id="1-开启AOF"><a href="#1-开启AOF" class="headerlink" title="1.开启AOF"></a>1.开启AOF</h3><p>默认情况下，Redis是没有开启AOF的，可以通过配置文件进行开启：</p><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">appendonly yes</span><br></pre></td></tr></table></figure><p>AOF文件的保存位置和RDB文件的位置相同，都是同过<strong>dir</strong>参数设置的，默认的文件名是<strong>appendonly.aof</strong>,可以通过<strong>appendfilename</strong>参数修改：</p><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">appendfilename appendonly.aof</span><br></pre></td></tr></table></figure><h3 id="2-AOF实现"><a href="#2-AOF实现" class="headerlink" title="2.AOF实现"></a>2.AOF实现</h3><p>当AOF文件的大小达到一定条件时，Redis就会自动重写AOF文件，这个条件可以在配置文件中设置：</p><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">auto-aof-rewrite-percentage 100# 当目前的AOF文件大小超过上一次重写时的AOF文件大小的百分之多少时，会再次进行重写，如果之前没有重写，则以启动时的AOF文件大小为依据。</span><br><span class="line">auto-aof-rewrite-min-size 64mb# 限制了允许重写的最小AOF文件大小</span><br></pre></td></tr></table></figure><p>除了自动执行重写外，还可以手动执行AOF重写：</p><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">127.0.0.1:6379&gt; bgrewriteaof</span><br></pre></td></tr></table></figure><p>AOF文件和RDB文件的文件格式完全不同。</p><p>在启动Redis时会逐个执行AOF文件中的命令来将硬盘中的数据载入到内存中，载入速度相较于RDB会慢一些。</p><h3 id="3-同步硬盘数据"><a href="#3-同步硬盘数据" class="headerlink" title="3.同步硬盘数据"></a>3.同步硬盘数据</h3><p>在执行AOF操作时，由于操作系统的缓存机制，数据并未真正地写入硬盘，而是进入了系统的硬盘缓存中。默认情况下系统每30秒会执行一次同步操作，以便将硬盘缓存中的数据真正写入到硬盘中，如果在这期间出现异常会导致硬盘缓存中的数据丢失。这就需要通过设置参数要求系统主动将缓存内容同步要硬盘中。</p><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span> appendfsync always# 每次执行写入都会执行同步，最安全但也最慢</span><br><span class="line">appendfsync everysec# 默认采用everysec规则，每秒执行一次同步操作。</span><br><span class="line"><span class="meta">#</span> appendfsync no# 不主动进行同步操作，而是交给操作系统来做(即每30秒一次)，虽快但不安全</span><br></pre></td></tr></table></figure><p>一般情况下使用默认值everysec就够了，性能和安全都有保障。</p><p>Redis允许同时开启<strong>AOF</strong>和<strong>RDB</strong>。</p><hr><h3 id="个人博客：https-jenkinwang-github-io"><a href="#个人博客：https-jenkinwang-github-io" class="headerlink" title="个人博客：https://jenkinwang.github.io/"></a>个人博客：<a href="https://jenkinwang.github.io/">https://jenkinwang.github.io/</a></h3>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;p&gt;将数据从内存中以某种形式同步到硬盘中，使得重启后可以根据硬盘中的记录恢复数据，这一过程就是&lt;strong&gt;持久化&lt;/strong&gt;。&lt;/p&gt;
+&lt;p&gt;Redis支持两种方式的持久化: ①&lt;strong&gt;RDB&lt;/strong&gt;方式：根据指定规则“定时”将内存中的数据存储在硬盘
+      
+    
+    </summary>
+    
+    
+      <category term="Redis" scheme="https://jenkinwang.github.io/tags/Redis/"/>
+    
+  </entry>
   
   <entry>
     <title>Redis学习笔记---进阶篇</title>
