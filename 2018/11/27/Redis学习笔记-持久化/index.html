@@ -273,7 +273,8 @@
         <p>将数据从内存中以某种形式同步到硬盘中，使得重启后可以根据硬盘中的记录恢复数据，这一过程就是<strong>持久化</strong>。</p>
 <p>Redis支持两种方式的持久化: ①<strong>RDB</strong>方式：根据指定规则“定时”将内存中的数据存储在硬盘上；</p>
 <p>​                          ②<strong>AOF</strong>方式：每次执行命令后将命令本身记录下来。</p>
-<h2 id="一、RDB方式"><a href="#一、RDB方式" class="headerlink" title="一、RDB方式"></a>一、RDB方式</h2><p>​    <strong>RDB</strong>方式的持久化是通过<strong>快照</strong>(<strong>snapshotting</strong>)完成的，当完成一定条件时Redis会自动将内存中的所有数据生成一份副本并存储在硬盘上，这个过程称为“<strong>快照</strong>”。</p>
+<h2 id="一、RDB方式"><a href="#一、RDB方式" class="headerlink" title="一、RDB方式"></a>一、RDB方式</h2><a id="more"></a>
+<p>​    <strong>RDB</strong>方式的持久化是通过<strong>快照</strong>(<strong>snapshotting</strong>)完成的，当完成一定条件时Redis会自动将内存中的所有数据生成一份副本并存储在硬盘上，这个过程称为“<strong>快照</strong>”。</p>
 <h3 id="1-根据配置规则进行自动快照"><a href="#1-根据配置规则进行自动快照" class="headerlink" title="1.根据配置规则进行自动快照"></a>1.根据配置规则进行自动快照</h3><p>通过<strong>redis.conf</strong>配置文件(/usr/local/etc/redis.conf)，我们可以看到Redis为我们预置了3个条件：</p>
 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">save 900 1		# 在15分钟(900秒)内有一个或一个以上的键被更改则进行快照。</span><br><span class="line">save 300 10		# 在5分钟(300秒)内至少有10个键被更改则进行快照。</span><br><span class="line">save 60 10000	# 在1分钟(60秒)内至少有1000个键被更改则进行快照。</span><br></pre></td></tr></table></figure>
 <p>每条快照条件占一行，以<strong>save</strong>参数开头。我们可以自定义这些参数，如果符合自动快照条件，Redis会自动执行快照条件。</p>
@@ -302,7 +303,7 @@
 <p>AOF文件和RDB文件的文件格式完全不同。</p>
 <p>在启动Redis时会逐个执行AOF文件中的命令来将硬盘中的数据载入到内存中，载入速度相较于RDB会慢一些。</p>
 <h3 id="3-同步硬盘数据"><a href="#3-同步硬盘数据" class="headerlink" title="3.同步硬盘数据"></a>3.同步硬盘数据</h3><p>在执行AOF操作时，由于操作系统的缓存机制，数据并未真正地写入硬盘，而是进入了系统的硬盘缓存中。默认情况下系统每30秒会执行一次同步操作，以便将硬盘缓存中的数据真正写入到硬盘中，如果在这期间出现异常会导致硬盘缓存中的数据丢失。这就需要通过设置参数要求系统主动将缓存内容同步要硬盘中。</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span> appendfsync always	# 每次执行写入都会执行同步，最安全但也最慢</span><br><span class="line">appendfsync everysec	# 默认采用everysec规则，每秒执行一次同步操作。</span><br><span class="line"><span class="meta">#</span> appendfsync no		# 不主动进行同步操作，而是交给操作系统来做(即每30秒一次)，虽快但不安全</span><br></pre></td></tr></table></figure>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> appendfsync always	<span class="comment"># 每次执行写入都会执行同步，最安全但也最慢</span></span></span><br><span class="line">appendfsync everysec	# 默认采用everysec规则，每秒执行一次同步操作。</span><br><span class="line"><span class="meta">#</span><span class="bash"> appendfsync no		<span class="comment"># 不主动进行同步操作，而是交给操作系统来做(即每30秒一次)，虽快但不安全</span></span></span><br></pre></td></tr></table></figure>
 <p>一般情况下使用默认值everysec就够了，性能和安全都有保障。</p>
 <p>Redis允许同时开启<strong>AOF</strong>和<strong>RDB</strong>。</p>
 <hr>
