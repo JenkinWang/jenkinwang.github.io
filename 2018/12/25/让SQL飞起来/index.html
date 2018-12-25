@@ -17,7 +17,7 @@
 
 
 
-  <meta name="description" content="一只慵懒的程序猿">
+  <meta name="description" content="让SQL飞起来">
 
 
 
@@ -42,7 +42,7 @@
 
 
 
-<link rel="canonical" href="https://jenkinwang.github.io/archives/2018/10/">
+<link rel="canonical" href="https://jenkinwang.github.io/2018/12/25/让SQL飞起来/">
 
 
 
@@ -106,11 +106,7 @@
   window.config = {"leancloud":{"enable":true,"app_id":"23JXQLK8pRo0JVsdCeKB26AH-gzGzoHsz","app_key":"Mq4M5ifluYUrP5reggvU7uKK"},"toc":true,"fancybox":false,"pjax":true};
 </script>
 
-    <title>
-  
-    归档 - JenkinWang's Blog
-  
-</title>
+    <title> 让SQL飞起来 - JenkinWang's Blog </title>
   </head>
 
   <body><div id="mobile-navbar" class="mobile-navbar">
@@ -240,99 +236,130 @@
           <div id="content" class="content">
             
   
-  
-  
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          让SQL飞起来
+        
+      </h1>
 
-  <section id="archive" class="archive">
-    
-      
-        <div class="archive-title">
-          <span class="archive-post-counter">
-            目前共计 6 篇日志
-          </span>
-        </div>
-      
-    
-
-    
-      
+      <div class="post-meta">
+        <span class="post-time">
+          2018-12-25
+        </span>
         
         
-
+        <span class="post-visits" data-url="/2018/12/25/让SQL飞起来/" data-title="让SQL飞起来">
+          阅读次数 0
+        </span>
         
-          
-          <div class="collection-title">
-            <h2 class="archive-year">2018</h2>
+      </div>
+    </header>
+
+    
+    
+  <div class="post-toc" id="post-toc">
+    <h2 class="post-toc-title">文章目录</h2>
+    <div class="post-toc-content">
+      <ol class="toc"><li class="toc-item toc-level-4"><a class="toc-link" href="#使用高效的查询"><span class="toc-text">使用高效的查询</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#避免排序"><span class="toc-text">避免排序</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#利用索引"><span class="toc-text">利用索引</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#减少中间表"><span class="toc-text">减少中间表</span></a></li></ol>
+    </div>
+  </div>
+
+
+
+    <div class="post-content">
+      
+        <p>作为一名JAVA开发者，对SQL的使用是必不可少的，当数量级别达到一定量的时候，一个好的SQL可以让程序跑的更顺畅。最近也不是很忙，就将双十一购买的这本《SQL进阶教程》阅读了前面一部分，给我的感受就是有种醍醐灌顶的感觉，也让我对SQL有了进一步的理解，里面的知识点很好的解决了在工作中经常会遇到的问题。下面是部分内容，推荐给大家。</p>
+<h4 id="使用高效的查询"><a href="#使用高效的查询" class="headerlink" title="使用高效的查询"></a>使用高效的查询</h4><ol>
+<li>参数是子查询时，使用EXISTS代替IN<br>如果连接列上建立了索引，只需查询索引即可；<br>如果使用exists，那么只查到一行数据满足条件就会终止查询，不像IN会扫描全表。 <a id="more"></a></li>
+<li>参数是子查询时，使用连接代替IN</li>
+</ol>
+<h4 id="避免排序"><a href="#避免排序" class="headerlink" title="避免排序"></a>避免排序</h4><p>会进行排序的代表性的运算：<br>    group by 子句<br>    order by 子句<br>    聚合函数（SUM、COUNT、AVG、MAX、MIN）<br>    DISTINCT<br>    集合运算符(UNION、INTERSECT、EXCEPT)<br>    窗口函数（RANK、ROW_NUMBER）<br>尽量避免无谓的排序。</p>
+<p>使用ALL可选项不会进行排序。</p>
+<p>使用EXISTS代替DISTINCT。</p>
+<p>极值函数中使用索引（MAX、MIN）</p>
+<p>能写在WHERE子句里的条件不要写在HAVING子句里。HAVING子句是针对聚合后生成的视图进行筛选的，但是很多时候聚合后的视图都没有继承原表的索引结构。</p>
+<p>在GROUP BY子句和ORDER BY子句中使用索引</p>
+<h4 id="利用索引"><a href="#利用索引" class="headerlink" title="利用索引"></a>利用索引</h4><p>使用索引时，条件表达式的左侧应该是原始字段。</p>
+<p>指定IS NULL和IS NOT NULL会使得索引无法使用。</p>
+<p><code>&lt;&gt;、!=、NOT IN</code>等否定形式不能用到索引。</p>
+<p>使用<code>OR</code>索引无法使用，除非是位图索引，但这会增大性能的开销。</p>
+<p>使用联合索引时，列的顺序错误，会导致索引无法使用。如果无法保证查询条件里列的顺序与索引一致，可以将联合索引拆分为多个索引。</p>
+<p>使用<code>LIKE</code>时，只有前方一致的匹配才能用到索引。如：<br><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> * <span class="keyword">from</span> sometable <span class="keyword">where</span> col_1 <span class="keyword">like</span> <span class="string">'%a'</span>;  <span class="comment">-- 不会使用索引</span></span><br><span class="line"><span class="keyword">select</span> * <span class="keyword">from</span> sometable <span class="keyword">where</span> col_1 <span class="keyword">like</span> <span class="string">'%a%'</span>; <span class="comment">-- 不会使用索引</span></span><br><span class="line"><span class="keyword">select</span> * <span class="keyword">from</span> sometable <span class="keyword">where</span> col_1 <span class="keyword">like</span> <span class="string">'a%'</span>;  <span class="comment">-- 会使用索引</span></span><br></pre></td></tr></table></figure></p>
+<p>默认的类型转换不仅会增加额外的性能开销，还会导致索引不可用，在需要类型转换的时候显示地进行类型转换(转换要写在条件表达式的右边)。</p>
+<h4 id="减少中间表"><a href="#减少中间表" class="headerlink" title="减少中间表"></a>减少中间表</h4><p>频繁使用中间表会带来两个问题：1.展开数据需要耗费内存资源，2.原始表中的索引不容易使用到。尽量减少中间表的使用也是提升性能的一个方法。</p>
+<p>先进行连接再进行聚合。</p>
+<p>合理使用视图。</p>
+<hr>
+<blockquote>
+<p>参考书籍：《SQL进阶教程》[日]MICK/著 吴岩昌/译</p>
+</blockquote>
+
+      
+    </div>
+
+    
+      
+      
+
+  <div class="post-copyright">
+    <p class="copyright-item">
+      <span>原文作者: </span>
+      <a href="https://jenkinwang.github.io">Jenkin Wang</a>
+    </p>
+    <p class="copyright-item">
+      <span>原文链接: </span>
+      <a href="https://jenkinwang.github.io/2018/12/25/让SQL飞起来/">https://jenkinwang.github.io/2018/12/25/让SQL飞起来/</a>
+    </p>
+    <p class="copyright-item">
+      <span>许可协议: </span>
+      
+      <a rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/" target="_blank">知识共享署名-非商业性使用 4.0 国际许可协议</a>
+    </p>
+  </div>
+
+
+
+      
+      
+    
+
+    
+      <footer class="post-footer">
+        
+          <div class="post-tags">
+            
+              <a href="/tags/MySQL/">MySQL</a>
+            
           </div>
         
-      
-
-      <div class="archive-post">
-        <span class="archive-post-time">
-          
-            10-29
-          
-        </span>
-        <span class="archive-post-title">
-          <a href="/2018/10/29/Redis学习笔记---数据类型/" class="archive-post-link">
-            Redis学习笔记---数据类型
-          </a>
-        </span>
-      </div>
+        
+        
+  <nav class="post-nav">
     
-      
-        
-        
-
-        
-      
-
-      <div class="archive-post">
-        <span class="archive-post-time">
-          
-            10-24
-          
-        </span>
-        <span class="archive-post-title">
-          <a href="/2018/10/24/Redis学习笔记---基础一/" class="archive-post-link">
-            Redis学习笔记---基础一
-          </a>
-        </span>
-      </div>
     
-      
-        
-        
-
-        
-      
-
-      <div class="archive-post">
-        <span class="archive-post-time">
-          
-            10-19
-          
-        </span>
-        <span class="archive-post-title">
-          <a href="/2018/10/19/springboot-redis/" class="archive-post-link">
-            SpringBoot整合Redis开发RESTful API接口
-          </a>
-        </span>
-      </div>
-    
-  </section>
-
-  
-  <nav class="pagination">
-    
+      <a class="next" href="/2018/11/27/Redis学习笔记-持久化/">
+        <span class="next-text nav-default">Redis学习笔记---持久化</span>
+        <span class="prev-text nav-mobile">下一篇</span>
+        <i class="iconfont icon-right"></i>
+      </a>
     
   </nav>
 
 
+      </footer>
+    
+
+  </article>
 
 
           </div>
           
+  <div class="comments" id="comments">
+    
+  </div>
+
 
         </div>
       </main>
@@ -426,6 +453,11 @@
     </div>
 
     
+  
+  
+
+  
+
 
 
     
