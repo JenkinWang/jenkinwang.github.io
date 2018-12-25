@@ -272,7 +272,7 @@
       
         <p>作为一名JAVA开发者，对SQL的使用是必不可少的，当数量级别达到一定量的时候，一个好的SQL可以让程序跑的更顺畅。最近也不是很忙，就将双十一购买的这本《SQL进阶教程》阅读了前面一部分，给我的感受就是有种醍醐灌顶的感觉，也让我对SQL有了进一步的理解，里面的知识点很好的解决了在工作中经常会遇到的问题。下面是部分内容，推荐给大家。</p>
 <h4 id="使用高效的查询"><a href="#使用高效的查询" class="headerlink" title="使用高效的查询"></a>使用高效的查询</h4><ol>
-<li>参数是子查询时，使用EXISTS代替IN<br>如果连接列上建立了索引，只需查询索引即可；<br>如果使用exists，那么只查到一行数据满足条件就会终止查询，不像IN会扫描全表。 <a id="more"></a></li>
+<li>参数是子查询时，使用EXISTS代替IN<br>如果连接列上建立了索引，只需查询索引即可；<br>如果使用exists，那么只查到一行数据满足条件就会终止查询，不像IN会扫描全表。<a id="more"></a></li>
 <li>参数是子查询时，使用连接代替IN</li>
 </ol>
 <h4 id="避免排序"><a href="#避免排序" class="headerlink" title="避免排序"></a>避免排序</h4><p>会进行排序的代表性的运算：<br>    group by 子句<br>    order by 子句<br>    聚合函数（SUM、COUNT、AVG、MAX、MIN）<br>    DISTINCT<br>    集合运算符(UNION、INTERSECT、EXCEPT)<br>    窗口函数（RANK、ROW_NUMBER）<br>尽量避免无谓的排序。</p>
