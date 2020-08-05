@@ -120,6 +120,25 @@
         <div class="content-wrapper">
           <div id="content" class="content"><section id="posts" class="posts"><article class="post">
     <header class="post-header">
+      <h1 class="post-title"><a class="post-link" href="/2020/08/05/Elasticsearch中Script脚本执行除法遇到的问题/">Elasticsearch中Script脚本执行除法遇到的问题</a>
+        </h1>
+
+      <div class="post-meta">
+        <span class="post-time">
+          2020-08-05
+        </span><span class="post-visits" data-url="/2020/08/05/Elasticsearch中Script脚本执行除法遇到的问题/" data-title="Elasticsearch中Script脚本执行除法遇到的问题">
+          Visits 0
+        </span>
+        </div>
+    </header>
+
+    <div class="post-content"><p>最近有一个需求，需要修改ES文档中的金额，以前是以<code>元</code>为单位，现在要换算成以<code>万元</code>为单位，但并不是所有数据都需要做处理，有一个Excel存储着不需要处理的数据。我第一时间想到的就是用<code>Python</code>写一个脚本处理ES文档，噼里啪啦一顿操作之后，基本就实现了该功能。但是处理的结果并不是预期的那样。下面我简单的举一个例子来复现一下我所遇到的问题。</p>
+          <div class="read-more">
+            <a href="/2020/08/05/Elasticsearch中Script脚本执行除法遇到的问题/" class="read-more-link">Read more..</a>
+          </div>
+        </div></article>
+      <article class="post">
+    <header class="post-header">
       <h1 class="post-title"><a class="post-link" href="/2019/01/01/使用Python获取微信好友并进行数据分析/">使用Python获取微信好友并进行数据分析</a>
         </h1>
 
