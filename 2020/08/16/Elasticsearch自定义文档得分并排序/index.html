@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head><meta name="generator" content="Hexo 3.8.0"><meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+<meta name="theme-color" content="#f8f5ec">
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+<meta name="description" content="Elasticsearch自定义文档得分并排序"><meta name="keywords" content="Jenkin Wang,jenkinwang,慵懒的程序猿,慵懒"><link rel="alternate" href="/atom.xml" title="JenkinWang's Blog"><link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=2.11.0">
+<link rel="canonical" href="https://jenkinwang.github.io/2020/08/16/Elasticsearch自定义文档得分并排序/">
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=2.11.0">
+
+<script id="baidu_analytics">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?7ed5592b09af70dfe085339cb29b1318";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script><!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-127759237-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-127759237-1');
+</script><script id="baidu_push">
+(function(){
+    var bp = document.createElement('script');
+    var curProtocol = window.location.protocol.split(':')[0];
+    if (curProtocol === 'https') {
+        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+    }
+    else {
+        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+    }
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(bp, s);
+})();
+</script>
+<script src="//cdn1.lncld.net/static/js/3.1.1/av-min.js"></script>
+  <script id="leancloud">
+    AV.init({
+      appId: "23JXQLK8pRo0JVsdCeKB26AH-gzGzoHsz",
+      appKey: "Mq4M5ifluYUrP5reggvU7uKK"
+    });
+  </script><script>
+  window.config = {"leancloud":{"enable":true,"app_id":"23JXQLK8pRo0JVsdCeKB26AH-gzGzoHsz","app_key":"Mq4M5ifluYUrP5reggvU7uKK"},"toc":true,"fancybox":false,"pjax":"","latex":false};
+</script>
+
+    <title>Elasticsearch自定义文档得分并排序 - JenkinWang's Blog</title>
+  </head>
+
+  <body><div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/." class="logo">JenkinWang's Blog</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list"><a href="/">
+        <li class="mobile-menu-item">Home
+          </li>
+      </a><a href="/archives/">
+        <li class="mobile-menu-item">Archives
+          </li>
+      </a><a href="/tags">
+        <li class="mobile-menu-item">Tags
+          </li>
+      </a><a href="/categories/">
+        <li class="mobile-menu-item">Categories
+          </li>
+      </a><a href="/about">
+        <li class="mobile-menu-item">About
+          </li>
+      </a></ul>
+</nav>
+<div class="container" id="mobile-panel">
+      <header id="header" class="header"><div class="logo-wrapper">
+  <a href="/." class="logo">JenkinWang's Blog</a>
+</div>
+
+<nav class="site-navbar"><ul id="menu" class="menu"><li class="menu-item">
+          <a class="menu-item-link" href="/">
+            Home
+            </a>
+        </li>
+      <li class="menu-item">
+          <a class="menu-item-link" href="/archives/">
+            Archives
+            </a>
+        </li>
+      <li class="menu-item">
+          <a class="menu-item-link" href="/tags">
+            Tags
+            </a>
+        </li>
+      <li class="menu-item">
+          <a class="menu-item-link" href="/categories/">
+            Categories
+            </a>
+        </li>
+      <li class="menu-item">
+          <a class="menu-item-link" href="/about">
+            About
+            </a>
+        </li>
+      </ul></nav>
+</header>
+
+      <main id="main" class="main">
+        <div class="content-wrapper">
+          <div id="content" class="content"><article class="post">
+    <header class="post-header">
+      <h1 class="post-title">Elasticsearch自定义文档得分并排序
+        </h1>
+
+      <div class="post-meta">
+        <span class="post-time">
+          2020-08-16
+        </span><span class="post-visits" data-url="/2020/08/16/Elasticsearch自定义文档得分并排序/" data-title="Elasticsearch自定义文档得分并排序">
+          Visits 0
+        </span>
+        </div>
+    </header>
+
+    <div class="post-content"><p>大多数情况下，我们需要对查询结果排序，比方说按最新时间降序、按金额降序等。我们只需要对相应的字段 <code>sort</code>  即可。但有时候也会出现一些复杂的情况，比方说有A、B、C、D、E类数据，他想让你给这类数据重新定义优先级，按照B、E、D、A、C的顺序展示，并且每类数据内部按时间降序。然而最近我们也提出了一个类似这样的需求，查阅相关文档后，发现Elasticsearch里的<code>function_socre</code>函数可以实现这一功能， 遂将此学习内容做一个记录。</p>
+<a id="more"></a>
+<p>先来看看<code>function_score</code>是什么，它能做什么？根据官网的原话：</p>
+<blockquote>
+<p>The <code>function_score</code> allows you to modify the score of documents that are retrieved by a query.</p>
+</blockquote>
+<p><code>function_score</code>允许你修改通过查询检索出来的文档的得分。</p>
+<p>下面我们通过一些简单的例子来看看<code>function_score</code>怎么使用。</p>
+<p><code>function_score</code>可以为所有文档生成一个随机分数：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">GET us_police_shooting_index/_search</span><br><span class="line">&#123;</span><br><span class="line">  <span class="string">"query"</span>: &#123;</span><br><span class="line">    <span class="string">"function_score"</span>: &#123;</span><br><span class="line">      <span class="string">"query"</span>: &#123;</span><br><span class="line">        <span class="string">"match_all"</span>: &#123;&#125;</span><br><span class="line">      &#125;,</span><br><span class="line">      <span class="string">"random_score"</span>: &#123;&#125;,</span><br><span class="line">      <span class="string">"boost"</span>: 5,</span><br><span class="line">      <span class="string">"boost_mode"</span>: <span class="string">"min"</span></span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>还可以组合不同的过滤条件，设置权重：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line">GET us_police_shooting_index/_search</span><br><span class="line">&#123;</span><br><span class="line">  <span class="string">"query"</span>: &#123;</span><br><span class="line">    <span class="string">"function_score"</span>: &#123;</span><br><span class="line">      <span class="string">"query"</span>: &#123;</span><br><span class="line">        <span class="string">"match_all"</span>: &#123;&#125;</span><br><span class="line">      &#125;,</span><br><span class="line">      <span class="string">"functions"</span>: [</span><br><span class="line">        &#123;</span><br><span class="line">          <span class="string">"filter"</span>: &#123;</span><br><span class="line">            <span class="string">"match"</span>: &#123;</span><br><span class="line">              <span class="string">"race"</span>: <span class="string">"Asian"</span></span><br><span class="line">            &#125;</span><br><span class="line">          &#125;,</span><br><span class="line">          <span class="string">"weight"</span>: 8</span><br><span class="line">        &#125;,</span><br><span class="line">        &#123;</span><br><span class="line">          <span class="string">"filter"</span>: &#123;</span><br><span class="line">            <span class="string">"match"</span>: &#123;</span><br><span class="line">              <span class="string">"race"</span>: <span class="string">"White"</span></span><br><span class="line">            &#125;</span><br><span class="line">          &#125;,</span><br><span class="line">          <span class="string">"weight"</span>: 2</span><br><span class="line">        &#125;</span><br><span class="line">      ],</span><br><span class="line">      <span class="string">"max_boost"</span>: 20,</span><br><span class="line">      <span class="string">"score_mode"</span>: <span class="string">"max"</span>,</span><br><span class="line">      <span class="string">"boost_mode"</span>: <span class="string">"sum"</span>,</span><br><span class="line">      <span class="string">"min_score"</span>: 3</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>如果<code>functions</code>里的<code>filter</code>未给出，那么将会匹配所有文档，相当于 <code>&quot;match_all&quot;:{}</code>。</p>
+</blockquote>
+<p>我们看看<code>function_score</code>为我们提供了哪些参数：</p>
+<ul>
+<li><code>score_mode</code>指定了该如何去合并每个文档生成的评分：</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th><code>score_mode</code></th>
+<th>定义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>multiply</code></td>
+<td><code>函数结果相乘（默认）</code></td>
+</tr>
+<tr>
+<td><code>sum</code></td>
+<td><code>函数结果相加</code></td>
+</tr>
+<tr>
+<td><code>avg</code></td>
+<td><code>函数结果的平均值</code></td>
+</tr>
+<tr>
+<td><code>first</code></td>
+<td><code>使用首个函数的结果做为最终结果</code></td>
+</tr>
+<tr>
+<td><code>max</code></td>
+<td><code>函数结果的最大值</code></td>
+</tr>
+<tr>
+<td><code>min</code></td>
+<td><code>函数结果的最小值</code></td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><code>boost_mode</code>可以用来控制函数与查询评分<code>_score</code>合并后的结果：</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th><code>boost_mode</code></th>
+<th>定义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>multiply</code></td>
+<td><code>评分_score与函数值的乘积(默认)</code></td>
+</tr>
+<tr>
+<td><code>replace</code></td>
+<td><code>评分_score会被忽略，仅使用函数值</code></td>
+</tr>
+<tr>
+<td><code>sum</code></td>
+<td><code>评分_score与函数值之和</code></td>
+</tr>
+<tr>
+<td><code>avg</code></td>
+<td><code>评分_score与函数值的平均值</code></td>
+</tr>
+<tr>
+<td><code>max</code></td>
+<td><code>评分_score与函数值间的最大值</code></td>
+</tr>
+<tr>
+<td><code>min</code></td>
+<td><code>评分_score与函数值间的最小值</code></td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><code>min_score</code>可以设置为期望分数的阈值，能够排出不符合特定分数阈值的文档。</li>
+<li><code>max_boost</code>可以限制函数的最大效果，但是不会对最终的评分<code>_score</code>产生直接的影响。</li>
+</ul>
+<p><code>function_score</code>还提供几种类型的评分函数：</p>
+<ul>
+<li><p><code>script_score</code>：脚本评分函数允许计算自定义查询的评分，脚本表达式需使用文档中的数值字段。查询的分数将与脚本评分的结果相乘，如果不想使用这种方式，可通过设置<code>&quot;boost_mode&quot;:&quot;replace&quot;</code>来禁止。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">GET /_search</span><br><span class="line">&#123;</span><br><span class="line">  <span class="string">"query"</span>: &#123;</span><br><span class="line">    <span class="string">"function_score"</span>: &#123;</span><br><span class="line">      <span class="string">"query"</span>: &#123;</span><br><span class="line">        <span class="string">"match"</span>: &#123; <span class="string">"message"</span>: <span class="string">"elasticsearch"</span> &#125;</span><br><span class="line">      &#125;,</span><br><span class="line">      <span class="string">"script_score"</span>: &#123;</span><br><span class="line">        <span class="string">"script"</span>: &#123;</span><br><span class="line">          <span class="string">"source"</span>: <span class="string">"Math.log(2 + doc['likes'].value)"</span></span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">GET /_search</span><br><span class="line">&#123;</span><br><span class="line">  <span class="string">"query"</span>: &#123;</span><br><span class="line">    <span class="string">"function_score"</span>: &#123;</span><br><span class="line">      <span class="string">"query"</span>: &#123;</span><br><span class="line">        <span class="string">"match"</span>: &#123; <span class="string">"message"</span>: <span class="string">"elasticsearch"</span> &#125;</span><br><span class="line">      &#125;,</span><br><span class="line">      <span class="string">"script_score"</span>: &#123;</span><br><span class="line">        <span class="string">"script"</span>: &#123;</span><br><span class="line">          <span class="string">"params"</span>: &#123;</span><br><span class="line">            <span class="string">"a"</span>: 5,</span><br><span class="line">            <span class="string">"b"</span>: 1.2</span><br><span class="line">          &#125;,</span><br><span class="line">          <span class="string">"source"</span>: <span class="string">"params.a / Math.pow(params.b, doc['likes'].value)"</span></span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p><code>weight</code>：权重函数可以将评分与<code>weight</code>值相乘，<code>weight</code>的值是<code>float</code>类型。</p>
+</li>
+<li><p><code>random_score</code>：随机评分函数会产生一个0到1之间的分数，当种子<code>feed</code>值相同时，生成的随机结果是一致的。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">GET /_search</span><br><span class="line">&#123;</span><br><span class="line">  <span class="string">"query"</span>: &#123;</span><br><span class="line">    <span class="string">"function_score"</span>: &#123;</span><br><span class="line">      <span class="string">"random_score"</span>: &#123;</span><br><span class="line">        <span class="string">"seed"</span>: 10,</span><br><span class="line">        <span class="string">"field"</span>: <span class="string">"_seq_no"</span></span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p><code>field_value_factor</code>：通过使用文档中的某个字段来影响评分。如果这个字段有多个值，那么只有第一个值才被用来计算评分。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">GET /_search</span><br><span class="line">&#123;</span><br><span class="line">  <span class="string">"query"</span>: &#123;</span><br><span class="line">    <span class="string">"function_score"</span>: &#123;</span><br><span class="line">      <span class="string">"field_value_factor"</span>: &#123;</span><br><span class="line">        <span class="string">"field"</span>: <span class="string">"likes"</span>,</span><br><span class="line">        <span class="string">"factor"</span>: 1.2,</span><br><span class="line">        <span class="string">"modifier"</span>: <span class="string">"sqrt"</span>,</span><br><span class="line">        <span class="string">"missing"</span>: 1</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment"># 上面评分的计算相当于 sqrt(1.2 * doc['likes'].value)</span></span><br></pre></td></tr></table></figure>
+<ul>
+<li><code>filed</code>：文档中提取的字段。</li>
+<li><code>factor</code>：字段值乘以的可选因子，默认是<code>1</code>。</li>
+<li><code>modifier</code>：<code>none</code>, <code>log</code>, <code>log1p</code>, <code>log2p</code>, <code>ln</code>, <code>ln1p</code>, <code>ln2p</code>, <code>square</code>, <code>sqrt</code>,  <code>reciprocal</code>。默认值是 <code>none</code>.</li>
+</ul>
+</li>
+<li><p><code>decay_functions</code>：衰减函数的功能与范围查询类似，但它具有更平滑的边缘。衰减函数支持<code>gauss</code>、<code>linear</code>、<code>exp</code>中任意一种函数，并且都能接收以下参数：</p>
+<ul>
+<li><code>origin</code>：中心点或字段可能的最佳值，落在原点<code>origin</code>上的文档评分<code>_score</code>为满分<code>1.0</code>。字段必须是数值、日期或地理坐标类型。</li>
+<li><code>scale</code>：衰减率，一个文档从原点<code>origin</code>下落时，评分<code>_score</code>改变的速度。</li>
+<li><code>offset</code>：以原点<code>origin</code>为中心点，为其设置一个非零的<code>offset</code>覆盖一个范围，而不只是单个原点。在范围<code>-offset &lt;= origin &lt;= +offset</code>内的所有评分<code>_score</code>都是<code>1.0</code>。</li>
+<li><code>decay</code>：从原点<code>origin</code>衰减到<code>scale</code>所得的评分<code>_score</code>，默认是<code>0.5</code>。</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line">GET /_search</span><br><span class="line">&#123;</span><br><span class="line">  <span class="string">"query"</span>: &#123;</span><br><span class="line">    <span class="string">"function_score"</span>: &#123;</span><br><span class="line">      <span class="string">"functions"</span>: [</span><br><span class="line">        &#123;</span><br><span class="line">          <span class="string">"gauss"</span>: &#123;</span><br><span class="line">            <span class="string">"price"</span>: &#123;</span><br><span class="line">              <span class="string">"origin"</span>: <span class="string">"0"</span>,</span><br><span class="line">              <span class="string">"scale"</span>: <span class="string">"20"</span></span><br><span class="line">            &#125;</span><br><span class="line">          &#125;</span><br><span class="line">        &#125;,</span><br><span class="line">        &#123;</span><br><span class="line">          <span class="string">"gauss"</span>: &#123;</span><br><span class="line">            <span class="string">"location"</span>: &#123;</span><br><span class="line">              <span class="string">"origin"</span>: <span class="string">"11, 12"</span>,</span><br><span class="line">              <span class="string">"scale"</span>: <span class="string">"2km"</span></span><br><span class="line">            &#125;</span><br><span class="line">          &#125;</span><br><span class="line">        &#125;</span><br><span class="line">      ],</span><br><span class="line">      <span class="string">"query"</span>: &#123;</span><br><span class="line">        <span class="string">"match"</span>: &#123;</span><br><span class="line">          <span class="string">"properties"</span>: <span class="string">"balcony"</span></span><br><span class="line">        &#125;</span><br><span class="line">      &#125;,</span><br><span class="line">      <span class="string">"score_mode"</span>: <span class="string">"multiply"</span></span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<p>  官方文档有这么一张图片说明了三个函数的衰减曲线形状：</p>
+<p>  <img src="/Users/jenkinwang/Desktop/Screen Shot 2020-08-16 at 11.46.44.png" alt=""></p>
+<p>以上就是<code>function_score</code>函数的大部分内容。现在我们来具体实现文章开头提到的一个需求。我准备了一份不同歌手的歌曲发行时间的测试数据，主要字段有歌手名name、歌曲名song、发行时间publishDate。</p>
+<p>首先我们先按歌手名降序，发行时间升序，很容易能写出下面的DSL语句：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">GET music_index/_search</span><br><span class="line">&#123;</span><br><span class="line">  <span class="string">"query"</span>: &#123;</span><br><span class="line">    <span class="string">"match_all"</span>: &#123;&#125;</span><br><span class="line">  &#125;,</span><br><span class="line">  <span class="string">"sort"</span>: [</span><br><span class="line">    &#123;</span><br><span class="line">      <span class="string">"name.keyword"</span>: &#123;</span><br><span class="line">        <span class="string">"order"</span>: <span class="string">"desc"</span></span><br><span class="line">      &#125;,</span><br><span class="line">      <span class="string">"publishDate.keyword"</span>: &#123;</span><br><span class="line">        <span class="string">"order"</span>: <span class="string">"asc"</span></span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  ]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>现在我想按许冠杰、邓丽君、陈百强的顺序进行展示，并且各自的歌曲按发行时间升序，<code>function_score</code>就体现出它的作用了：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br></pre></td><td class="code"><pre><span class="line">GET music_index/_search</span><br><span class="line">&#123;</span><br><span class="line">  <span class="string">"query"</span>: &#123;</span><br><span class="line">    <span class="string">"function_score"</span>: &#123;</span><br><span class="line">      <span class="string">"query"</span>: &#123;</span><br><span class="line">        <span class="string">"match_all"</span>: &#123;&#125;</span><br><span class="line">      &#125;,</span><br><span class="line">      <span class="string">"functions"</span>: [</span><br><span class="line">        &#123;</span><br><span class="line">          <span class="string">"filter"</span>: &#123;</span><br><span class="line">            <span class="string">"term"</span>: &#123;</span><br><span class="line">              <span class="string">"name.keyword"</span>: <span class="string">"许冠杰"</span></span><br><span class="line">            &#125;</span><br><span class="line">          &#125;,</span><br><span class="line">          <span class="string">"weight"</span>: 5</span><br><span class="line">        &#125;,</span><br><span class="line">        &#123;</span><br><span class="line">          <span class="string">"filter"</span>: &#123;</span><br><span class="line">            <span class="string">"term"</span>: &#123;</span><br><span class="line">              <span class="string">"name.keyword"</span>: <span class="string">"邓丽君"</span></span><br><span class="line">            &#125;</span><br><span class="line">          &#125;,</span><br><span class="line">          <span class="string">"weight"</span>: 4</span><br><span class="line">        &#125;,</span><br><span class="line">        &#123;</span><br><span class="line">          <span class="string">"filter"</span>: &#123;</span><br><span class="line">            <span class="string">"term"</span>: &#123;</span><br><span class="line">              <span class="string">"name.keyword"</span>: <span class="string">"陈百强"</span></span><br><span class="line">            &#125;</span><br><span class="line">          &#125;,</span><br><span class="line">          <span class="string">"weight"</span>: 3</span><br><span class="line">        &#125;</span><br><span class="line">      ]</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;,</span><br><span class="line">  <span class="string">"sort"</span>: [</span><br><span class="line">    &#123;</span><br><span class="line">      <span class="string">"_score"</span>: &#123;</span><br><span class="line">        <span class="string">"order"</span>: <span class="string">"desc"</span></span><br><span class="line">      &#125;,</span><br><span class="line">      <span class="string">"publishDate.keyword"</span>: &#123;</span><br><span class="line">        <span class="string">"order"</span>: <span class="string">"asc"</span></span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  ]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>由于查询文档太长，我就不粘贴查询结果了。感兴趣的可以自己动手尝试尝试，如果需要测试数据，公众号回复<code>0816</code>即可获取相关文件。</p>
+<hr>
+<p>相关链接：</p>
+<p><a href="https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-function-score-query.html" target="_blank" rel="noopener">https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-function-score-query.html</a></p>
+<p><a href="https://www.elastic.co/guide/cn/elasticsearch/guide/current/function-score-query.html" target="_blank" rel="noopener">https://www.elastic.co/guide/cn/elasticsearch/guide/current/function-score-query.html</a></p>
+
+      </div>
+      <div class="post-copyright">
+    <p class="copyright-item">
+      <span>Author: </span>
+      <a href="https://jenkinwang.github.io">Jenkin Wang</a>
+    </p>
+    <p class="copyright-item">
+      <span>Link: </span>
+      <a href="https://jenkinwang.github.io/2020/08/16/Elasticsearch自定义文档得分并排序/">https://jenkinwang.github.io/2020/08/16/Elasticsearch自定义文档得分并排序/</a>
+    </p>
+    <p class="copyright-item">
+      <span>License: </span><a rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/" target="_blank">知识共享署名-非商业性使用 4.0 国际许可协议</a>
+    </p>
+  </div>
+      <div class="post-reward">
+    <input type="checkbox" name="reward" id="reward" hidden>
+    <label class="reward-button" for="reward">Reward</label>
+    <div class="qr-code"><label class="qr-code-image" for="reward">
+          <img class="image" src="/images/reward/wechat.jpg" title="wechat">
+        </label>
+      </div>
+  </div><footer class="post-footer">
+        <div class="post-tags">
+            <a href="/tags/Elasticsearch/">Elasticsearch</a>
+            </div>
+        
+        <nav class="post-nav"><a class="next" href="/2020/08/05/Elasticsearch中Script脚本执行除法遇到的问题/">
+        <span class="next-text nav-default">Elasticsearch中Script脚本执行除法遇到的问题</span>
+        <span class="prev-text nav-mobile">Next</span>
+        <i class="iconfont icon-right"></i>
+      </a>
+    </nav></footer>
+    </article></div><div class="comments" id="comments"><div id="gitalk-container"></div>
+    </div></div>
+      </main>
+
+      <footer id="footer" class="footer"><div class="social-links"><a href="mailto:Jenkinsmile@gmail.com" class="iconfont icon-email" title="email"></a>
+        <a href="https://twitter.com/jenkin9400" class="iconfont icon-twitter" title="twitter"></a>
+        <a href="https://github.com/JenkinWang" class="iconfont icon-github" title="github"></a>
+        <a href="https://weibo.com/p/1005055055707163" class="iconfont icon-weibo" title="weibo"></a>
+        <a href="/atom.xml" class="iconfont icon-rss" title="rss"></a>
+    </div><div class="copyright">
+  <span class="power-by">
+    Powered by <a class="hexo-link" href="https://hexo.io/">Hexo</a>
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    Theme - 
+    <a class="theme-link" href="https://github.com/ahonn/hexo-theme-even">Even</a>
+  </span>
+
+  <span class="copyright-year">&copy;2018 - 2020<span class="heart">
+      <i class="iconfont icon-heart"></i>
+    </span>
+    <span class="author">Jenkin Wang</span>
+  </span>
+</div>
+</footer>
+
+      <div class="back-to-top" id="back-to-top">
+        <i class="iconfont icon-up"></i>
+      </div>
+    </div>
+<script src="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+
+<script src="//cdn.jsdelivr.net/npm/js-md5@0.7.3/src/md5.min.js"></script>
+
+<script>
+  var gitalk = new Gitalk({
+    clientID: 'dc91b3de845edf779f6e',
+    clientSecret: '047e44bb67f71276996f3658387de0b6461bb17a',
+    repo: 'jenkinwang.github.io',
+    owner: 'JenkinWang',
+    admin: ['JenkinWang'],
+    id: md5(location.pathname),
+    
+      language: window.navigator.language || window.navigator.userLanguage,
+    
+    distractionFreeMode: 'true'
+  });
+  gitalk.render('gitalk-container');
+</script><script type="text/javascript" src="/lib/jquery/jquery.min.js"></script>
+  <script type="text/javascript" src="/lib/slideout/slideout.js"></script>
+  <script type="text/javascript" src="/js/src/even.js?v=2.11.0"></script>
+</body>
+</html>

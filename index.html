@@ -128,6 +128,25 @@
         <div class="content-wrapper">
           <div id="content" class="content"><section id="posts" class="posts"><article class="post">
     <header class="post-header">
+      <h1 class="post-title"><a class="post-link" href="/2020/08/16/Elasticsearch自定义文档得分并排序/">Elasticsearch自定义文档得分并排序</a>
+        </h1>
+
+      <div class="post-meta">
+        <span class="post-time">
+          2020-08-16
+        </span><span class="post-visits" data-url="/2020/08/16/Elasticsearch自定义文档得分并排序/" data-title="Elasticsearch自定义文档得分并排序">
+          Visits 0
+        </span>
+        </div>
+    </header>
+
+    <div class="post-content"><p>大多数情况下，我们需要对查询结果排序，比方说按最新时间降序、按金额降序等。我们只需要对相应的字段 <code>sort</code>  即可。但有时候也会出现一些复杂的情况，比方说有A、B、C、D、E类数据，他想让你给这类数据重新定义优先级，按照B、E、D、A、C的顺序展示，并且每类数据内部按时间降序。然而最近我们也提出了一个类似这样的需求，查阅相关文档后，发现Elasticsearch里的<code>function_socre</code>函数可以实现这一功能， 遂将此学习内容做一个记录。</p>
+          <div class="read-more">
+            <a href="/2020/08/16/Elasticsearch自定义文档得分并排序/" class="read-more-link">Read more..</a>
+          </div>
+        </div></article>
+      <article class="post">
+    <header class="post-header">
       <h1 class="post-title"><a class="post-link" href="/2020/08/05/Elasticsearch中Script脚本执行除法遇到的问题/">Elasticsearch中Script脚本执行除法遇到的问题</a>
         </h1>
 
